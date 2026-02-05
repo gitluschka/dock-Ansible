@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  redmine_db:
+    image: postgres:13
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: redmine
+      POSTGRES_PASSWORD: secure_password
+      POSTGRES_DB: redmine
+    volumes:
+      - redmine_db_data:/var/lib/postgresql/data
+    networks:
+      - redmine_network
+
+  redmine_app:
+    image: redmine:5
+    restart: unless-stopped
+    depends_on:
+      - redmine_db
+    ports:
+      - "80:3000"
+    environment:
+      REDMINE_DB_POSTGRES: redmine_db
+      REDMINE_DB_USERNAME: redmine
+      REDMINE_DB_PASSWORD: secure_password
+      REDMINE_SECRET_KEY_BASE: "supersecretkey"
+    volumes:
+      - redmine_app_data:/usr/src/redmine/files
+    networks:
+      - redmine_network
+
+volumes:
+  redmine_db_data:
+  redmine_app_data:
+
+networks:
+  redmine_network:
+    driver: bridge

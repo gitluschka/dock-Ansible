@@ -1,0 +1,44 @@
+---
+- name: Ensure Redmine directory exists
+  ansible.builtin.file:
+    path: /opt/redmine
+    state: directory
+    mode: '0755'
+
+- name: Copy Docker Compose file for Redmine
+  ansible.builtin.copy:
+    src: files/docker-compose.yml
+    dest: /opt/redmine/docker-compose.yml
+    mode: '0644'
+
+- name: Pull Redmine and PostgreSQL images
+  community.docker.docker_compose_v2:
+    project_src: /opt/redmine
+    pull: missing
+
+- name: Start Redmine services with Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: /opt/redmine
+    state: present
+    recreate: auto
+    wait: true
+    wait_timeout: 60
+    scale: '{{ item }}'
+  loop:
+    - redmine_app=1
+    - redmine_db=1
+
+# In case of community.docker.docker_compose errors
+#- name: Start Redmine services using docker-compose
+#  ansible.builtin.shell:
+#    cmd: docker compose -f /opt/redmine/docker-compose.yml up -d
+#    chdir: /opt/redmine
+#  environment:
+#    COMPOSE_PROJECT_NAME: redmine
+
+- name: Wait for Redmine to start (60 sec timeout)
+  ansible.builtin.wait_for:
+    port: 80
+    host: "{{ ansible_host }}"
+    delay: 10
+    timeout: 60

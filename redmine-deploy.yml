@@ -1,0 +1,7 @@
+---
+- name: Deploy Redmine on Server
+  hosts: server
+  become: true
+  roles:
+    - geerlingguy.docker
+    - redmine
