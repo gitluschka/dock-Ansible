@@ -5,3 +5,6 @@
 
 Запустить playbook:
 `ansible-playbook -i inventory.yml redmine-deploy.yml --ask-become-pass`
+
+Проверка:
+Открыть в браузере `http://80.74.29.73`
